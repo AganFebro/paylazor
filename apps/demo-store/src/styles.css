@@ -1,0 +1,74 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f6f7fb;
+  color: #0b1220;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.header h1 {
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.header p {
+  margin: 0;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+@media (min-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr 420px;
+    align-items: start;
+  }
+}
+
+.card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(2, 8, 23, 0.06);
+}
+
+.card h2 {
+  margin: 0 0 8px;
+}
+
+.card p {
+  margin: 0 0 12px;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.input {
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
