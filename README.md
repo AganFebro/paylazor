@@ -28,3 +28,7 @@ By default, the demo uses the local portal at `https://localhost:5174` and runs 
 
 - `tutorials/01-passkey-wallet.md`
 - `tutorials/02-gasless-usdc-payment.md`
+
+## Using Paylazor in your own site
+
+- `README_PAYLAZOR_INSTALL.md`
