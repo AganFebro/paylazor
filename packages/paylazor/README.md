@@ -17,6 +17,9 @@ export function Checkout() {
   return (
     <PaylazorCheckout
       amount="1.50"
+      // Optional: enable SOL payments too
+      enabledCurrencies={['USDC', 'SOL']}
+      defaultCurrency="USDC"
       // Optional: overrides
       config={{
         rpcUrl: 'https://api.devnet.solana.com',
@@ -36,3 +39,4 @@ export function Checkout() {
 
 - `autoCreateAtas` defaults to `both` so the widget can work out-of-the-box even when USDC token accounts don’t exist yet.
 - If you don’t want the paymaster to pay rent for ATA creation, set `autoCreateAtas="none"` and ensure both sender/recipient USDC token accounts already exist.
+- SOL payments use a native `SystemProgram.transfer`. No token accounts are involved.

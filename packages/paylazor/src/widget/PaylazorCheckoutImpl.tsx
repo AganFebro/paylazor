@@ -5,11 +5,15 @@ import { createAssociatedTokenAccountIdempotentInstruction, getAssociatedTokenAd
 
 import { DEFAULT_PAYLAZOR_CONFIG } from './config';
 import { paylazorError, type PaylazorError } from './errors';
-import type { PaylazorCheckoutProps, PaylazorConfig, PaylazorAutoCreateAtas } from './types';
+import type { PaylazorCheckoutProps, PaylazorConfig, PaylazorAutoCreateAtas, PaylazorCurrency } from './types';
+import { buildSolTransferInstruction } from './native';
 import { buildUsdcTransferInstructions } from './solana';
 import { formatFixedDecimal, parseFixedDecimalToBigInt } from './units';
 
 type Step = 'idle' | 'connecting' | 'confirm' | 'paying' | 'success' | 'error';
+const SOL_DECIMALS = 9;
+
+const DEFAULT_ENABLED_CURRENCIES: PaylazorCurrency[] = ['USDC'];
 
 function normalizeConfig(overrides?: Partial<PaylazorConfig>): PaylazorConfig {
   return { ...DEFAULT_PAYLAZOR_CONFIG, ...(overrides || {}) };
@@ -40,6 +44,9 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
     recipient,
     memo,
     config: configOverrides,
+    enabledCurrencies,
+    defaultCurrency = 'USDC',
+    onCurrencyChange,
     autoCreateAtas = 'both',
     onSuccess,
     onError,
@@ -110,6 +117,9 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
         memo={memo}
         config={config}
         autoCreateAtas={autoCreateAtas}
+        enabledCurrencies={enabledCurrencies}
+        defaultCurrency={defaultCurrency}
+        onCurrencyChange={onCurrencyChange}
         step={step}
         setStep={setStep}
         signature={signature}
@@ -140,6 +150,9 @@ function PaylazorCheckoutInner(args: {
   memo?: string;
   config: PaylazorConfig;
   autoCreateAtas: PaylazorAutoCreateAtas;
+  enabledCurrencies?: PaylazorCurrency[];
+  defaultCurrency: PaylazorCurrency;
+  onCurrencyChange?: (currency: PaylazorCurrency) => void;
   step: Step;
   setStep: (s: Step) => void;
   signature: string | null;
@@ -152,6 +165,20 @@ function PaylazorCheckoutInner(args: {
   onSuccess: (sig: string) => void;
 }) {
   const { smartWalletPubkey, isConnected, isLoading, wallet, connect, disconnect, signAndSendTransaction } = useWallet();
+
+  const supportedCurrencies = useMemo(() => {
+    const raw = args.enabledCurrencies?.length ? args.enabledCurrencies : DEFAULT_ENABLED_CURRENCIES;
+    const normalized = raw.filter((c) => c === 'USDC' || c === 'SOL');
+    return normalized.length ? normalized : DEFAULT_ENABLED_CURRENCIES;
+  }, [args.enabledCurrencies]);
+  const initialCurrency = useMemo<PaylazorCurrency>(() => {
+    if (supportedCurrencies.includes(args.defaultCurrency)) return args.defaultCurrency;
+    return supportedCurrencies[0] ?? 'USDC';
+  }, [args.defaultCurrency, supportedCurrencies]);
+  const [currency, setCurrency] = useState<PaylazorCurrency>(initialCurrency);
+  useEffect(() => {
+    setCurrency(initialCurrency);
+  }, [initialCurrency]);
 
   const recipientAddress = args.recipient || args.config.merchantAddress;
   const walletAddress = smartWalletPubkey?.toBase58() ?? null;
@@ -168,11 +195,14 @@ function PaylazorCheckoutInner(args: {
   const [usdcBalanceBaseUnits, setUsdcBalanceBaseUnits] = useState<bigint | null>(null);
   const [usdcAtaStatus, setUsdcAtaStatus] = useState<'unknown' | 'missing' | 'present'>('unknown');
   const [lastRecipientAtaMissing, setLastRecipientAtaMissing] = useState<boolean>(false);
+  const [solBalance, setSolBalance] = useState<string | null>(null);
+  const [solBalanceLamports, setSolBalanceLamports] = useState<bigint | null>(null);
   const mountedRef = useRef<boolean>(true);
 
-  const amountBaseUnitsOrError = useMemo(() => parseFixedDecimalToBigInt(args.amount, args.config.usdcDecimals), [
+  const amountDecimals = currency === 'SOL' ? SOL_DECIMALS : args.config.usdcDecimals;
+  const amountBaseUnitsOrError = useMemo(() => parseFixedDecimalToBigInt(args.amount, amountDecimals), [
     args.amount,
-    args.config.usdcDecimals,
+    amountDecimals,
   ]);
 
   const amountBaseUnits = typeof amountBaseUnitsOrError === 'bigint' ? amountBaseUnitsOrError : null;
@@ -227,9 +257,29 @@ function PaylazorCheckoutInner(args: {
     }
   }, [args.config.rpcUrl, args.config.usdcMint, smartWalletPubkey]);
 
+  const refreshSolBalance = useCallback(async (): Promise<void> => {
+    if (!smartWalletPubkey) return;
+    try {
+      const connection = new Connection(args.config.rpcUrl);
+      const lamports = await connection.getBalance(smartWalletPubkey);
+      if (!mountedRef.current) return;
+      const lamportsBigInt = BigInt(lamports);
+      setSolBalanceLamports(lamportsBigInt);
+      setSolBalance(formatFixedDecimal(lamportsBigInt, SOL_DECIMALS));
+    } catch {
+      if (!mountedRef.current) return;
+      setSolBalanceLamports(null);
+      setSolBalance(null);
+    }
+  }, [args.config.rpcUrl, smartWalletPubkey]);
+
   useEffect(() => {
     void refreshBalance();
   }, [refreshBalance]);
+
+  useEffect(() => {
+    void refreshSolBalance();
+  }, [refreshSolBalance]);
 
   async function handleConnect() {
     args.clearLastPortalError();
@@ -296,6 +346,93 @@ function PaylazorCheckoutInner(args: {
       args.setStep('error');
       return;
     }
+
+    const recipientOrError = safePublicKey(recipientAddress, 'merchant address');
+    if (isPaylazorError(recipientOrError)) {
+      args.setError(recipientOrError);
+      args.setStep('error');
+      return;
+    }
+
+    if (currency === 'SOL') {
+      if (solBalanceLamports !== null && solBalanceLamports < amountBaseUnits) {
+        const balanceText = solBalance ?? '0';
+        args.setError(
+          paylazorError(
+            'INSUFFICIENT_FUNDS',
+            `Insufficient SOL balance (have ${balanceText}, need ${args.amount}). Fund the wallet and retry.`
+          )
+        );
+        args.setStep('error');
+        return;
+      }
+
+      let instructions: any[];
+      try {
+        instructions = [
+          buildSolTransferInstruction({
+            from: smartWalletPubkey,
+            to: recipientOrError,
+            lamports: amountBaseUnits,
+          }),
+        ];
+      } catch (cause) {
+        args.setError(paylazorError('TRANSFER_BUILD_FAILED', 'Failed to build SOL transfer', cause));
+        args.setStep('error');
+        return;
+      }
+
+      try {
+        const sig = await retry(() => signAndSendTransactionCompat(signAndSendTransaction, instructions, args.config.clusterSimulation), {
+          retries: 2,
+          delayMs: 800,
+          shouldRetry: (e) => isPossiblyUninitializedWalletError(e),
+        });
+        args.onSuccess(sig);
+        args.setStep('success');
+      } catch (cause) {
+        if (isInvalidSessionError(cause)) {
+          try {
+            await disconnect();
+          } catch {
+            // ignore
+          }
+          args.setError(
+            paylazorError(
+              'PAYMENT_FAILED',
+              'Wallet session is invalid. Please reconnect with passkey and try again.',
+              cause
+            )
+          );
+          args.setStep('idle');
+          return;
+        }
+        const portalError = args.getLastPortalError();
+        const portalHint = portalError
+          ? `Portal error: ${portalError.error}${portalError.details ? ` (${portalError.details})` : ''}`
+          : null;
+        const underlying = formatUnderlyingError(cause);
+        if (portalHint && (cause instanceof Error ? cause.message : String(cause)).toLowerCase().includes('sign')) {
+          args.setError(
+            paylazorError('PAYMENT_FAILED', `Signing failed. ${portalHint}${underlying ? ` (${underlying})` : ''}`, cause)
+          );
+          args.setStep('error');
+          return;
+        }
+        args.setError(
+          paylazorError(
+            'PAYMENT_FAILED',
+            `${portalHint ? `Payment failed. ${portalHint}` : 'Payment failed'}${underlying ? ` (${underlying})` : ''}`,
+            cause
+          )
+        );
+        args.setStep('error');
+      } finally {
+        void refreshSolBalance();
+      }
+      return;
+    }
+
     if (usdcBalanceBaseUnits !== null && usdcBalanceBaseUnits < amountBaseUnits) {
       const balanceText = usdcBalance ?? '0';
       args.setError(
@@ -311,13 +448,6 @@ function PaylazorCheckoutInner(args: {
     const mintOrError = safePublicKey(args.config.usdcMint, 'USDC mint');
     if (isPaylazorError(mintOrError)) {
       args.setError(mintOrError);
-      args.setStep('error');
-      return;
-    }
-
-    const recipientOrError = safePublicKey(recipientAddress, 'merchant address');
-    if (isPaylazorError(recipientOrError)) {
-      args.setError(recipientOrError);
       args.setStep('error');
       return;
     }
@@ -441,20 +571,50 @@ function PaylazorCheckoutInner(args: {
         )
       );
       args.setStep('error');
+    } finally {
+      void refreshBalance();
     }
   }
 
-  const displayAmount = amountBaseUnits ? formatFixedDecimal(amountBaseUnits, args.config.usdcDecimals) : args.amount;
+  const displayAmount = amountBaseUnits ? formatFixedDecimal(amountBaseUnits, amountDecimals) : args.amount;
+  const currencyLabel = currency === 'SOL' ? 'SOL' : 'USDC';
 
   return (
     <div className="paylazor-root">
       <div className="paylazor-card">
-        <p className="paylazor-title">Pay with Solana (USDC)</p>
+        <p className="paylazor-title">Pay with Solana</p>
         <p className="paylazor-sub">Passkey checkout powered by LazorKit. Default network: Devnet.</p>
+
+        {supportedCurrencies.length > 1 ? (
+          <div className="paylazor-row" style={{ alignItems: 'center' }}>
+            <span className="paylazor-label">Payment</span>
+            <span className="paylazor-value">
+              <span className="paylazor-segment" role="tablist" aria-label="Payment currency">
+                {supportedCurrencies.map((c) => (
+                  <button
+                    key={c}
+                    className={`paylazor-segBtn${currency === c ? ' isActive' : ''}`}
+                    onClick={() => {
+                      setCurrency(c);
+                      args.onCurrencyChange?.(c);
+                    }}
+                    type="button"
+                    role="tab"
+                    aria-selected={currency === c}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </span>
+            </span>
+          </div>
+        ) : null}
 
         <div className="paylazor-row">
           <span className="paylazor-label">Amount</span>
-          <span className="paylazor-value">{displayAmount} USDC</span>
+          <span className="paylazor-value">
+            {displayAmount} {currencyLabel}
+          </span>
         </div>
         <div className="paylazor-row">
           <span className="paylazor-label">Recipient</span>
@@ -466,19 +626,25 @@ function PaylazorCheckoutInner(args: {
             <span className="paylazor-value paylazor-mono">{walletAddress}</span>
           </div>
         ) : null}
-        {usdcAtaAddress ? (
+        {currency === 'USDC' && usdcAtaAddress ? (
           <div className="paylazor-row">
             <span className="paylazor-label">USDC ATA</span>
             <span className="paylazor-value paylazor-mono">{usdcAtaAddress}</span>
           </div>
         ) : null}
-        {usdcBalance !== null ? (
+        {currency === 'USDC' && usdcBalance !== null ? (
           <div className="paylazor-row">
             <span className="paylazor-label">USDC Balance</span>
             <span className="paylazor-value">{usdcBalance}</span>
           </div>
         ) : null}
-        {usdcAtaStatus === 'missing' && usdcAtaAddress ? (
+        {currency === 'SOL' && solBalance !== null ? (
+          <div className="paylazor-row">
+            <span className="paylazor-label">SOL Balance</span>
+            <span className="paylazor-value">{solBalance}</span>
+          </div>
+        ) : null}
+        {currency === 'USDC' && usdcAtaStatus === 'missing' && usdcAtaAddress ? (
           <div className="paylazor-error">
             USDC token account not found. Create the USDC ATA for this wallet, then fund it with USDC:
             <div className="paylazor-mono" style={{ marginTop: 6 }}>
@@ -486,7 +652,7 @@ function PaylazorCheckoutInner(args: {
             </div>
           </div>
         ) : null}
-        {lastRecipientAtaMissing ? (
+        {currency === 'USDC' && lastRecipientAtaMissing ? (
           <div className="paylazor-error">Recipient USDC token account not found. Ask the merchant to create their USDC ATA.</div>
         ) : null}
         {args.memo ? (

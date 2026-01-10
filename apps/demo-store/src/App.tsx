@@ -47,6 +47,8 @@ export default function App() {
           <PaylazorCheckout
             amount={amount}
             config={config}
+            enabledCurrencies={['USDC', 'SOL']}
+            defaultCurrency="USDC"
             autoCreateAtas="both"
             onSuccess={({ signature }) => console.log('Paid:', signature)}
           />

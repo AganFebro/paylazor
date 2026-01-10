@@ -142,13 +142,15 @@ export function CheckoutWidget() {
   return (
     <div style={{ maxWidth: 520 }}>
       <label style={{ display: 'block', marginBottom: 12 }}>
-        Amount (USDC)
+        Amount
         <input value={amount} onChange={(e) => setAmount(e.target.value)} />
       </label>
 
       <PaylazorCheckout
         amount={amount}
         config={config}
+        enabledCurrencies={['USDC', 'SOL']}
+        defaultCurrency="USDC"
         autoCreateAtas="both"
         onSuccess={({ signature }) => {
           console.log('Payment submitted:', signature);
@@ -166,6 +168,11 @@ export function CheckoutWidget() {
 - `autoCreateAtas="both"` (recommended for plug-and-play): ensures the payer’s and recipient’s USDC token accounts exist.
 - `autoCreateAtas="recipient"`: only ensures the merchant’s USDC token account exists.
 - `autoCreateAtas="none"`: safest/strictest; requires both token accounts already exist.
+
+### SOL vs USDC behavior
+
+- **USDC** uses an SPL token transfer (requires USDC balances and token accounts).
+- **SOL** uses a native SOL transfer. The wallet must have enough SOL for the transfer amount (and potentially fees, depending on your LazorKit/paymaster setup).
 
 ---
 
@@ -281,7 +288,8 @@ app.post('/api/checkout-sessions/:id/verify', async (req, res) => {
 
   if (tx.meta?.err) return res.status(400).json({ error: 'tx_failed', details: tx.meta.err });
 
-  // Verify recipient received the expected USDC amount by checking token balance delta on the recipient ATA.
+  // Verify recipient received the expected USDC amount by checking token balance delta.
+  // For SOL payments, verify the lamport delta (or parsed SystemProgram.transfer instruction) instead.
   const recipientAta = getAssociatedTokenAddressSync(USDC_MINT, new PublicKey(session.recipient), true);
   const pre = tx.meta?.preTokenBalances?.find((b) => b.mint === USDC_MINT.toBase58() && b.owner === session.recipient);
   const post = tx.meta?.postTokenBalances?.find((b) => b.mint === USDC_MINT.toBase58() && b.owner === session.recipient);
@@ -317,6 +325,7 @@ app.listen(3001, () => console.log('API listening on :3001'));
   - USDC mint matches your expected mint
   - Recipient matches your merchant address
   - Amount matches your session amount (in base units)
+- If you support both SOL and USDC, store the chosen currency in the session and verify accordingly (token deltas for USDC, lamports/instructions for SOL).
 - Consider requiring a unique `memo` and verifying it (optional), so replayed signatures can’t be reused for other orders.
 - Store sessions in a real database and make verification idempotent.
 
@@ -329,4 +338,3 @@ app.listen(3001, () => console.log('API listening on :3001'));
 - Treat the client-reported signature as untrusted until server verification passes.
 - Rate limit `POST /verify` and add basic abuse protection.
 - Log verification failures with the signature and session id for support.
-

@@ -13,6 +13,10 @@ const CSS = `
 .paylazor-btnPrimary{background:#0b1220;border-color:#0b1220;color:#fff}
 .paylazor-btn:disabled{opacity:.6;cursor:not-allowed}
 .paylazor-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(15,23,42,.12);border-radius:999px;padding:4px 10px;font-size:12px;color:rgba(15,23,42,.75);background:rgba(2,8,23,.02)}
+.paylazor-segment{display:inline-flex;border:1px solid rgba(15,23,42,.16);border-radius:999px;overflow:hidden}
+.paylazor-segBtn{appearance:none;border:0;background:transparent;padding:6px 10px;font-weight:650;font-size:12px;cursor:pointer;color:rgba(15,23,42,.8)}
+.paylazor-segBtn.isActive{background:#0b1220;color:#fff}
+.paylazor-segBtn:disabled{opacity:.6;cursor:not-allowed}
 .paylazor-error{margin-top:10px;border:1px solid rgba(185,28,28,.2);background:rgba(185,28,28,.06);color:#7f1d1d;border-radius:12px;padding:10px;font-size:13px}
 .paylazor-success{margin-top:10px;border:1px solid rgba(22,163,74,.18);background:rgba(22,163,74,.06);color:#14532d;border-radius:12px;padding:10px;font-size:13px}
 .paylazor-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
@@ -27,4 +31,3 @@ export function injectPaylazorStyles(): void {
   document.head.appendChild(style);
   stylesInjected = true;
 }
-
