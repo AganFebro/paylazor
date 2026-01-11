@@ -3,17 +3,13 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { LazorkitProvider, Paymaster, useWallet } from '@lazorkit/wallet';
 import { createAssociatedTokenAccountIdempotentInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
 
-import { DEFAULT_PAYLAZOR_CONFIG } from './config';
+import { resolvePaylazorConfig } from './config';
 import { paylazorError, type PaylazorError } from './errors';
 import type { PaylazorCheckoutProps, PaylazorConfig, PaylazorAutoCreateAtas } from './types';
 import { buildUsdcTransferInstructions } from './solana';
 import { formatFixedDecimal, parseFixedDecimalToBigInt } from './units';
 
 type Step = 'idle' | 'connecting' | 'confirm' | 'paying' | 'success' | 'error';
-
-function normalizeConfig(overrides?: Partial<PaylazorConfig>): PaylazorConfig {
-  return { ...DEFAULT_PAYLAZOR_CONFIG, ...(overrides || {}) };
-}
 
 function isPaylazorError(value: unknown): value is PaylazorError {
   return (
@@ -45,7 +41,12 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
     onError,
   } = props;
 
-  const config = useMemo(() => normalizeConfig(configOverrides), [configOverrides]);
+  const configOrError = useMemo(() => resolvePaylazorConfig(configOverrides), [configOverrides]);
+  const configError = useMemo<PaylazorError | null>(
+    () => (isPaylazorError(configOrError) ? configOrError : null),
+    [configOrError]
+  );
+  const config = useMemo<PaylazorConfig | null>(() => (isPaylazorError(configOrError) ? null : configOrError), [configOrError]);
   const [step, setStep] = useState<Step>('idle');
   const [signature, setSignature] = useState<string | null>(null);
   const [error, setError] = useState<PaylazorError | null>(null);
@@ -53,6 +54,7 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
   const lastPortalErrorRef = useRef<{ error: string; details?: string } | null>(null);
 
   useEffect(() => {
+    if (!config) return;
     const portalHost = safeHost(config.portalUrl);
     function onMessage(event: MessageEvent) {
       let originHost: string;
@@ -96,7 +98,37 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
     }
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [config.portalUrl]);
+  }, [config]);
+
+  useEffect(() => {
+    if (!configError) return;
+    onError?.(configError);
+  }, [configError, onError]);
+
+  if (!config) {
+    const shownError = configError ?? paylazorError('CONFIG_INVALID', 'Missing required configuration.');
+    return (
+      <div className="paylazor-root">
+        <div className="paylazor-card">
+          <p className="paylazor-title">Pay with Solana (USDC)</p>
+          <p className="paylazor-sub">Missing required configuration.</p>
+          <div className="paylazor-error">
+            <div style={{ fontWeight: 650, marginBottom: 4 }}>{shownError.code}</div>
+            <div>{shownError.message}</div>
+            <div style={{ marginTop: 6 }}>
+              {configOverrides?.errorFaqUrl ? (
+                <a href={configOverrides.errorFaqUrl} target="_blank" rel="noreferrer">
+                  See GitHub for error FAQ
+                </a>
+              ) : (
+                <span>See GitHub for error FAQ</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <LazorkitProvider
@@ -524,6 +556,15 @@ function PaylazorCheckoutInner(args: {
           <div className="paylazor-error">
             <div style={{ fontWeight: 650, marginBottom: 4 }}>{args.error.code}</div>
             <div>{args.error.message}</div>
+            <div style={{ marginTop: 6 }}>
+              {args.config.errorFaqUrl ? (
+                <a href={args.config.errorFaqUrl} target="_blank" rel="noreferrer">
+                  See GitHub for error FAQ
+                </a>
+              ) : (
+                <span>See GitHub for error FAQ</span>
+              )}
+            </div>
           </div>
         ) : null}
 

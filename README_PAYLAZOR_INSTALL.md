@@ -78,6 +78,8 @@ VITE_LAZORKIT_PORTAL_URL=https://portal.lazor.sh
 VITE_LAZORKIT_PAYMASTER_URL=https://kora.devnet.lazorkit.com
 VITE_USDC_MINT=USDCoctVLVnvTXBEuP9s8hntucdJokbo17RwHuNXemT
 VITE_MERCHANT_ADDRESS=YOUR_MERCHANT_PUBLIC_KEY
+VITE_USDC_DECIMALS=6
+VITE_CLUSTER_SIMULATION=devnet
 ```
 
 Notes:
@@ -135,6 +137,8 @@ export function CheckoutWidget() {
       paymasterUrl: import.meta.env.VITE_LAZORKIT_PAYMASTER_URL,
       usdcMint: import.meta.env.VITE_USDC_MINT,
       merchantAddress: import.meta.env.VITE_MERCHANT_ADDRESS,
+      usdcDecimals: Number(import.meta.env.VITE_USDC_DECIMALS),
+      clusterSimulation: import.meta.env.VITE_CLUSTER_SIMULATION,
     }),
     []
   );

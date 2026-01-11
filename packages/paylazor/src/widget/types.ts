@@ -10,6 +10,10 @@ export type PaylazorConfig = {
   merchantAddress: string;
   usdcDecimals: number;
   clusterSimulation: 'devnet' | 'mainnet';
+  /**
+   * Optional URL to a public FAQ page (e.g., your GitHub docs) shown alongside errors.
+   */
+  errorFaqUrl?: string;
 };
 
 export type PaylazorCheckoutProps = {
