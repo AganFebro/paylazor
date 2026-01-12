@@ -15,9 +15,9 @@
   <img alt="Paylazor demo" src="img/paylazor.gif" width="700" />
 </p>
 
-Paylazor is an embeddable **“Pay with Solana (USDC)” checkout widget for React** built on top of the LazorKit passkey wallet SDK and paymaster (gasless transactions).
+Paylazor is an embeddable **“Pay with Solana (USDC)” checkout widget for React** built on top of the LazorKit passkey wallet SDK and paymaster (gasless transactions). It’s designed to help you ship a working checkout flow quickly, without re-building the same UI states and Solana/USDC plumbing from scratch in every app.
 
-It’s designed to help you ship a working checkout flow quickly, without re-building the same UI states and Solana/USDC plumbing from scratch in every app.
+**You can test the demo on Vercel**, click this button below:
 <div align="center">
   <a href="https://paylazor-demo-store.vercel.app"><img alt="Try Paylazor demo" src="https://img.shields.io/badge/Try_Paylazor-Now!?style=for-the-badge&label=DEMO" height="40" /></a>
   <br />
@@ -62,7 +62,7 @@ Paylazor’s goal is to package those pieces into a small, typed, reusable widge
 
 ## Structure
 
-- [`packages/paylazor`](packages/paylazor) — the widget library source code (React)
+- [`packages/paylazor`](packages/paylazor) — paylazor widget library source code (React)
 - [`apps/demo-store`](apps/demo-store) — minimal Vite React demo
 - [`apps/portal`](apps/portal) — self-hosted passkey portal (WebAuthn + postMessage)
 - [`tutorials`](tutorials)
@@ -89,7 +89,7 @@ Notes:
 - `.env.example` defaults to Devnet + local portal (`VITE_LAZORKIT_PORTAL_URL=https://localhost:5174`).
 - For production/self-hosted portals, set `VITE_PORTAL_ALLOWED_ORIGINS` in the portal deployment (see `README_PAYLAZOR_INSTALL.md`).
 
-## Demo walkthrough
+## Deploy locally
 
 1. Open the demo store (`https://localhost:5173` or `https://localhost:5175`).
 2. Click **Continue with passkey** and complete the portal prompt.
@@ -104,3 +104,11 @@ If something breaks:
 
 - [Configuring Passkey Wallet](tutorials/01-passkey-wallet.md)
 - [Configuring Gassless USDC Payment](tutorials/02-gasless-usdc-payment.md)
+
+## Known Error
+
+- **Transaction Size Too Large:**
+Refresh the website and retry payment
+
+- **Error Transaction Custom Program 0x2:**
+Create a new wallet then funds with USDC
