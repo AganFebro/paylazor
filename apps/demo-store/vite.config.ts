@@ -9,6 +9,11 @@ export default defineConfig({
       hosts: ['localhost', '127.0.0.1'],
     }),
   ],
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+    },
+  },
   envDir: '../..',
   define: {
     global: 'globalThis',

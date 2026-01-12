@@ -28,6 +28,29 @@ Why a backend is required:
 
 ---
 
+## Before you start (important)
+
+- The client is untrusted: do not fulfill orders until your backend verifies **mint + recipient + amount** on-chain.
+- The passkey portal must be served over HTTPS and must be allowed to communicate with your site.
+- If you see errors like `Buffer is not defined` or `Module "buffer" has been externalized`, jump to the troubleshooting section under step 5.
+
+---
+
+## Step-by-step checklist
+
+1. Create a new website (Vite + React)
+2. Install `paylazor` with npm
+3. Install required dependencies / polyfills
+4. Configure environment variables (`VITE_...`)
+5. Enable HTTPS in Vite (required for passkeys) + apply troubleshooting if needed
+6. Render the `PaylazorCheckout` widget
+7. (Optional, recommended) Self-host the portal and allowlist your site origins
+8. Add a backend checkout session (compute amount/recipient server-side)
+9. Verify the payment on-chain before fulfillment
+10. Follow the production checklist for deployment
+
+---
+
 ## 1) Create a new website (Vite + React)
 
 ```bash
@@ -53,6 +76,8 @@ From your new website folder:
 ```bash
 pnpm add file:../paylazor/packages/paylazor
 ```
+
+Note: in this repo, `packages/paylazor/package.json` is currently marked `"private": true`, so the “from npm” path is for when publishing is enabled.
 
 ---
 
@@ -85,6 +110,7 @@ VITE_CLUSTER_SIMULATION=devnet
 Notes:
 - These values are **public** (they ship to the browser). That’s fine.
 - If your paymaster requires an API key, **do not** put it in `VITE_…` vars. Keep it server-side.
+- For local development with this repo’s portal, set `VITE_LAZORKIT_PORTAL_URL=https://localhost:5174` and run `pnpm --filter portal dev` from the monorepo.
 
 ---
 
@@ -106,8 +132,9 @@ import mkcert from 'vite-plugin-mkcert';
 export default defineConfig({
   plugins: [react(), mkcert()],
   define: { global: 'globalThis' },
+  resolve: { alias: { buffer: 'buffer/' } },
   optimizeDeps: { include: ['buffer'] },
-  server: { https: true, host: true },
+  server: { https: {}, host: true },
 });
 ```
 
@@ -115,6 +142,48 @@ Then start:
 
 ```bash
 pnpm dev
+```
+
+### Troubleshooting: `Buffer is not defined` / “module externalized”
+
+Solana tooling (and LazorKit) expects a couple of Node-ish globals in the browser. `paylazor` installs minimal polyfills when you render `PaylazorCheckout`, but some bundlers can still pre-bundle dependencies early.
+
+If you see any of these errors:
+- `Uncaught ReferenceError: Buffer is not defined`
+- `Module "buffer" has been externalized for browser compatibility`
+
+Apply all of the following:
+- In `vite.config.ts`, keep `resolve.alias.buffer = 'buffer/'` and `optimizeDeps.include = ['buffer']` (see above).
+- Restart the dev server with `--force` (re-optimize deps): `pnpm dev -- --force`
+- As a last resort (if another dependency runs before `PaylazorCheckout`), install Buffer globals in your app entry:
+
+```ts
+import { Buffer } from 'buffer/';
+
+const g = globalThis as any;
+g.global ||= globalThis;
+g.Buffer ||= Buffer;
+g.process ||= { env: {} };
+g.process.env ||= {};
+```
+
+### TypeScript editor errors in `vite.config.ts` (optional)
+
+Some editors typecheck `vite.config.ts` outside your main TS project and can show confusing Vite plugin type errors.
+
+Add a `tsconfig.node.json` (Vite template pattern) to include `vite.config.ts`:
+
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}
 ```
 
 ---

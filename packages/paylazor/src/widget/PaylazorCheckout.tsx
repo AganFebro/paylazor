@@ -1,5 +1,5 @@
 import { Suspense, lazy, useMemo } from 'react';
-import { Buffer } from 'buffer';
+import { Buffer } from 'buffer/';
 
 import type { PaylazorCheckoutProps } from './types';
 import { injectPaylazorStyles } from './styles';

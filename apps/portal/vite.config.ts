@@ -11,6 +11,11 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+    },
+  },
   envDir: '../..',
   define: {
     global: 'globalThis',
@@ -21,6 +26,6 @@ export default defineConfig({
   server: {
     port: 5174,
     host: true,
-    https: {}},
+    https: {},
   },
-);
+});

@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer';
+import { Buffer } from 'buffer/';
 import './styles.css';
 
 // Ensure Node-ish globals exist before any LazorKit modules are evaluated.

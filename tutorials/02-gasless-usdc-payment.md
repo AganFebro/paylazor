@@ -17,6 +17,7 @@ This tutorial sends a USDC SPL-token transfer instruction using LazorKit’s `si
 ## Notes / troubleshooting
 
 - If the recipient (merchant) USDC associated token account doesn’t exist, the transfer can fail.
-  - The widget defaults `autoCreateAtas="none"` for safety.
-  - You can opt-in to ATA creation via `autoCreateAtas="recipient"` or `autoCreateAtas="both"` (see `packages/paylazor/README.md`).
+  - The widget defaults `autoCreateAtas="both"` for plug-and-play (it will create missing ATAs via the paymaster).
+  - If you want the strictest behavior, set `autoCreateAtas="none"` and ensure both sender + recipient USDC token accounts already exist.
+  - Middle-ground: `autoCreateAtas="recipient"` ensures the merchant ATA exists but won’t create the payer ATA.
 - If the paymaster endpoint is unreachable, the widget fails early with “Failed to reach paymaster”.

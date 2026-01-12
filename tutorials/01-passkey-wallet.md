@@ -5,8 +5,16 @@ This tutorial shows the passkey-based connect flow used by the `paylazor` widget
 ## Prerequisites
 
 - `pnpm install`
-- Start the demo: `pnpm --filter demo-store dev`
-- Defaults are Devnet and the hosted portal (`https://portal.lazor.sh`).
+- Copy env defaults: `cp .env.example .env` and set `VITE_MERCHANT_ADDRESS` in `.env`
+- Start the portal: `pnpm --filter portal dev`
+- Start the demo: `pnpm --filter demo-store dev` (or `pnpm --filter demo-store-clean dev`)
+- Defaults are Devnet and the local portal (`https://localhost:5174`) via `.env.example`.
+
+To use the hosted LazorKit portal instead, set:
+
+```bash
+VITE_LAZORKIT_PORTAL_URL=https://portal.lazor.sh
+```
 
 ## Steps
 
@@ -19,4 +27,3 @@ This tutorial shows the passkey-based connect flow used by the `paylazor` widget
 
 - The widget wraps itself in LazorKit’s `LazorkitProvider` with `rpcUrl`, `portalUrl`, and `paymasterUrl`.
 - It calls `useWallet().connect({ feeMode: 'paymaster' })` to create/restore a passkey wallet session.
-
