@@ -18,10 +18,14 @@
 Paylazor is an embeddable **“Pay with Solana (USDC)” checkout widget for React** built on top of the LazorKit passkey wallet SDK and paymaster (gasless transactions).
 
 It’s designed to help you ship a working checkout flow quickly, without re-building the same UI states and Solana/USDC plumbing from scratch in every app.
+<div align="center">
+  <a href="https://paylazor-demo-store.vercel.app"><img alt="Try Paylazor demo" src="https://img.shields.io/badge/Try_Paylazor-Now!?style=for-the-badge&label=DEMO" height="40" /></a>
+  <br />
+  </div>
 
-## Use Paylazor Now!
+## Integrate Paylazor into your website
 
-- [Paylazor installation using pnpm](README_PAYLAZOR_INSTALL.md)
+[`Paylazor installation using pnpm`](README_PAYLAZOR_INSTALL.md)
 
 ## What is Paylazor?
 
