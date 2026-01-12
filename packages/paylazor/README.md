@@ -1,16 +1,18 @@
 # paylazor
 
 Embeddable “Pay with Solana (USDC)” checkout widget, integrated with LazorKit passkeys and paymaster.
+Visit [Paylazor GitHub](https://github.com/AganFebro/paylazor/tree/main/packages/paylazor) to see the source code.
 
-## Status
-
-- This package is wired as a workspace dependency in this monorepo.
-- Publishing to npm is intended, but this repo currently marks the package as private (`packages/paylazor/package.json`).
-
-## Install
+## Install Paylazor
 
 ```bash
-pnpm add paylazor @lazorkit/wallet @solana/web3.js @coral-xyz/anchor @solana/spl-token
+pnpm add @febro28/paylazor
+```
+
+## Install Required Dependencies
+
+```bash
+pnpm add @lazorkit/wallet @solana/web3.js @coral-xyz/anchor @solana/spl-token
 ```
 
 ## Configuration
@@ -46,7 +48,7 @@ VITE_CLUSTER_SIMULATION=devnet
 ## Usage
 
 ```tsx
-import { PaylazorCheckout } from 'paylazor';
+import { PaylazorCheckout } from '@febro28/paylazor';
 
 export function Checkout() {
   return (
@@ -90,5 +92,5 @@ server: { https: {}, host: true },
 
 ## Security notes (recommended)
 
-- Don’t trust the browser: compute `amount` and `recipient` server-side and verify on-chain before fulfillment (see `README_PAYLAZOR_INSTALL.md`).
-- If you self-host `apps/portal`, set `VITE_PORTAL_ALLOWED_ORIGINS` on the portal deployment so only your site can open it.
+- Don’t trust the browser: compute `amount` and `recipient` server-side and verify on-chain before fulfillment (see [README_PAYLAZOR_INSTALL.md](https://github.com/AganFebro/paylazor/blob/main/README_PAYLAZOR_INSTALL.md).
+- If you self-host [apps/portal](https://github.com/AganFebro/paylazor/tree/main/apps/portal), set `VITE_PORTAL_ALLOWED_ORIGINS` on the portal deployment so only your site can open it.

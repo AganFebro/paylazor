@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { PaylazorCheckout } from 'paylazor';
-import type { PaylazorConfig } from 'paylazor';
+import { PaylazorCheckout } from '@febro28/paylazor';
+import type { PaylazorConfig } from '@febro28/paylazor';
 
 const DEFAULT_AMOUNT = '1.00';
 
@@ -46,36 +46,59 @@ export default function App() {
       </header>
 
       <main className="grid">
-        <section className="card">
-          <h2>Test product</h2>
-          <p>USDC payment via LazorKit passkeys + paymaster.</p>
-          {missingEnv.length > 0 ? (
-            <p style={{ marginTop: 12, color: '#b91c1c' }}>
-              Missing required env vars: <code>{missingEnv.join(', ')}</code>. Set them in <code>.env</code> (see{' '}
-              <code>.env.example</code>).
-            </p>
-          ) : null}
+        <div className="stack">
+          <section className="card">
+            <h2>Test product</h2>
+            <p>USDC payment via LazorKit passkeys + paymaster.</p>
+            {missingEnv.length > 0 ? (
+              <p className="warning">
+                Missing required env vars: <code>{missingEnv.join(', ')}</code>. Set them in <code>.env</code> (see{' '}
+                <code>.env.example</code>).
+              </p>
+            ) : null}
 
-          <label className="label">
-            Amount (USDC)
-            <input
-              className="input"
-              inputMode="decimal"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="1.00"
+            <label className="label">
+              Amount (USDC)
+              <input
+                className="input"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="1.00"
+              />
+            </label>
+          </section>
+
+          <section>
+            <PaylazorCheckout
+              amount={amount}
+              config={config}
+              autoCreateAtas="both"
+              onSuccess={({ signature }) => console.log('Paid:', signature)}
             />
-          </label>
-        </section>
+          </section>
+        </div>
 
-        <section>
-          <PaylazorCheckout
-            amount={amount}
-            config={config}
-            autoCreateAtas="both"
-            onSuccess={({ signature }) => console.log('Paid:', signature)}
-          />
-        </section>
+        <aside className="card">
+          <h2>How to test</h2>
+          <p>If you faced Transaction Too Large error, please try again. It's a known issue with the current implementation.</p>
+          <p>Make sure your wallet has some USDC on Devnet.</p>
+          <p>
+            Devnet USDC mint: <code className="mono">USDCoctVLVnvTXBEuP9s8hntucdJokbo17RwHuNXemT</code>
+          </p>
+          <p>
+            Swap on Raydium (select Devnet in settings):{' '}
+            <a
+              href="https://raydium.io/swap/?inputCurrency=sol&outputCurrency=4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R&fixed=in&inputMint=sol&outputMint=USDCoctVLVnvTXBEuP9s8hntucdJokbo17RwHuNXemT"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open Raydium swap
+            </a>
+
+          
+          </p>
+        </aside>
       </main>
     </div>
   );

@@ -15,7 +15,7 @@ const CSS = `
 .paylazor-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(15,23,42,.12);border-radius:999px;padding:4px 10px;font-size:12px;color:rgba(15,23,42,.75);background:rgba(2,8,23,.02)}
 .paylazor-error{margin-top:10px;border:1px solid rgba(185,28,28,.2);background:rgba(185,28,28,.06);color:#7f1d1d;border-radius:12px;padding:10px;font-size:13px}
 .paylazor-success{margin-top:10px;border:1px solid rgba(22,163,74,.18);background:rgba(22,163,74,.06);color:#14532d;border-radius:12px;padding:10px;font-size:13px}
-.paylazor-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
+.paylazor-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;overflow-wrap:anywhere;word-break:break-all}
 `;
 
 export function injectPaylazorStyles(): void {

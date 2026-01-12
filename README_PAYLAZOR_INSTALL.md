@@ -2,9 +2,9 @@
 
 This guide shows how to use the `paylazor` checkout widget in a brand new website, plus a minimal backend pattern to create orders and verify USDC payments securely.
 
-If you’re just looking for a quick example, see `packages/paylazor/README.md`.
+## Short Tutorial
+If you're just looking for a quick example, see [packages/paylazor/README.md](packages/paylazor/README.md)
 
----
 
 ## What you’re building
 
@@ -36,18 +36,17 @@ Why a backend is required:
 
 ---
 
-## Step-by-step checklist
+## Table of Contents
 
-1. Create a new website (Vite + React)
-2. Install `paylazor` with npm
-3. Install required dependencies / polyfills
-4. Configure environment variables (`VITE_...`)
-5. Enable HTTPS in Vite (required for passkeys) + apply troubleshooting if needed
-6. Render the `PaylazorCheckout` widget
-7. (Optional, recommended) Self-host the portal and allowlist your site origins
-8. Add a backend checkout session (compute amount/recipient server-side)
-9. Verify the payment on-chain before fulfillment
-10. Follow the production checklist for deployment
+1. [Create a new website (Vite + React)](#1-create-a-new-website-vite--react)
+2. [Install `paylazor` with npm](#2-install-paylazor)
+3. [Install required dependencies](#3-install-required-dependencies)
+4. [Configure environment variables (`VITE_...`)](#4-configure-environment-variables)
+5. [Enable HTTPS in Vite (required for passkeys) + apply troubleshooting if needed](#5-enable-https-in-vite-required-for-passkeys)
+6. [Render the `PaylazorCheckout` widget](#6-render-the-default-paylazor-widget-template-ui)
+7. [(Optional) Self-host the portal and allowlist your site origins](#7-optional-self-host-your-own-portal)
+8. [Add a backend checkout session (compute amount/recipient server-side)](#8-backend-create-a-checkout-session)
+9. [Verify the payment on-chain before fulfillment](#9-backend-verify-the-payment-on-chain)
 
 ---
 
@@ -63,25 +62,13 @@ pnpm install
 
 ## 2) Install `paylazor`
 
-### Option A — from npm (when published)
-
 ```bash
-pnpm add paylazor
+pnpm add @febro28/paylazor
 ```
-
-### Option B — local install (right now, before publishing)
-
-From your new website folder:
-
-```bash
-pnpm add file:../paylazor/packages/paylazor
-```
-
-Note: in this repo, `packages/paylazor/package.json` is currently marked `"private": true`, so the “from npm” path is for when publishing is enabled.
 
 ---
 
-## 3) Install required dependencies / polyfills
+## 3) Install required dependencies
 
 `paylazor` depends on the LazorKit wallet SDK and Solana tooling. Install these alongside it:
 
@@ -106,12 +93,6 @@ VITE_MERCHANT_ADDRESS=YOUR_MERCHANT_PUBLIC_KEY
 VITE_USDC_DECIMALS=6
 VITE_CLUSTER_SIMULATION=devnet
 ```
-
-Notes:
-- These values are **public** (they ship to the browser). That’s fine.
-- If your paymaster requires an API key, **do not** put it in `VITE_…` vars. Keep it server-side.
-- For local development with this repo’s portal, set `VITE_LAZORKIT_PORTAL_URL=https://localhost:5174` and run `pnpm --filter portal dev` from the monorepo.
-
 ---
 
 ## 5) Enable HTTPS in Vite (required for passkeys)
@@ -194,7 +175,7 @@ Example component:
 
 ```tsx
 import { useMemo, useState } from 'react';
-import { PaylazorCheckout } from 'paylazor';
+import { PaylazorCheckout } from '@febro28/paylazor';
 
 export function CheckoutWidget() {
   const [amount, setAmount] = useState('1.00');
@@ -242,7 +223,7 @@ export function CheckoutWidget() {
 
 ---
 
-## 7) Optional: self-host your own portal (recommended for production)
+## 7) Optional: self-host your own portal
 
 The portal is the page that performs passkey authentication and approvals. You can:
 
@@ -260,7 +241,7 @@ Security hardening (recommended):
 
 ---
 
-## 8) Backend: create a checkout session (don’t trust the browser)
+## 8) Backend: create a checkout session
 
 Minimal approach:
 
@@ -282,7 +263,7 @@ Why this matters:
 
 ---
 
-## 9) Backend: verify the payment on-chain (Node/Express example)
+## 9) Backend: verify the payment on-chain
 
 Install in your backend:
 
@@ -392,14 +373,3 @@ app.listen(3001, () => console.log('API listening on :3001'));
   - Amount matches your session amount (in base units)
 - Consider requiring a unique `memo` and verifying it (optional), so replayed signatures can’t be reused for other orders.
 - Store sessions in a real database and make verification idempotent.
-
----
-
-## 10) Recommended production checklist
-
-- Host both your website and portal over HTTPS.
-- Self-host the portal and set `VITE_PORTAL_ALLOWED_ORIGINS`.
-- Treat the client-reported signature as untrusted until server verification passes.
-- Rate limit `POST /verify` and add basic abuse protection.
-- Log verification failures with the signature and session id for support.
-

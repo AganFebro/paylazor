@@ -16,12 +16,13 @@
     "@lazorkit/wallet": "2.0.1",
     "@solana/web3.js": "^1.98.2",
     "buffer": "^6.0.3",
-    "paylazor": "workspace:*",
+    "@febro28/paylazor": "^1.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
