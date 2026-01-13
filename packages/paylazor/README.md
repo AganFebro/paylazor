@@ -54,6 +54,8 @@ export function Checkout() {
   return (
     <PaylazorCheckout
       amount="1.50"
+      theme="midnight"
+      debug={false}
       config={{
         rpcUrl: import.meta.env.VITE_SOLANA_RPC_URL,
         portalUrl: import.meta.env.VITE_LAZORKIT_PORTAL_URL,
@@ -70,6 +72,19 @@ export function Checkout() {
   );
 }
 ```
+
+## Themes
+
+`theme` controls the widget look:
+
+- `system` (default): follows `prefers-color-scheme`
+- `default`: always light
+- `dark`: neutral dark
+- `midnight`: dark blue/purple
+
+## Debug mode
+
+Set `debug` to show extra diagnostic details (recipient + ATA addresses). This is useful for demos and troubleshooting, and you can keep it off in production UIs.
 
 ## Vite setup (passkeys + Solana polyfills)
 

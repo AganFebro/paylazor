@@ -14,8 +14,72 @@ importers:
         specifier: ^0.31.1
         version: 0.31.1(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)
       '@febro28/paylazor':
-        specifier: ^1.0.2
-        version: 1.0.2(jghq2qbzpb6ghr4geho7aelbh4)
+        specifier: workspace:*
+        version: link:../../packages/paylazor
+      '@lazorkit/wallet':
+        specifier: 2.0.1
+        version: 2.0.1(xdua7f72yw2zw3nbj7rgk4cwd4)
+      '@solana/web3.js':
+        specifier: ^1.98.2
+        version: 1.98.4(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.21.0
+        version: 9.39.2
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.10.4
+      '@types/react':
+        specifier: ^19.0.10
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.0.4
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@6.4.1(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2))
+      eslint:
+        specifier: ^9.21.0
+        version: 9.39.2(jiti@2.6.1)
+      eslint-plugin-react-hooks:
+        specifier: ^5.1.0
+        version: 5.2.0(eslint@9.39.2(jiti@2.6.1))
+      eslint-plugin-react-refresh:
+        specifier: ^0.4.19
+        version: 0.4.26(eslint@9.39.2(jiti@2.6.1))
+      globals:
+        specifier: ^15.15.0
+        version: 15.15.0
+      typescript:
+        specifier: ~5.7.2
+        version: 5.7.3
+      typescript-eslint:
+        specifier: ^8.24.1
+        version: 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.7.3)
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.1(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)
+      vite-plugin-mkcert:
+        specifier: ^1.17.8
+        version: 1.17.9(vite@6.4.1(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2))
+
+  apps/demo-template:
+    dependencies:
+      '@coral-xyz/anchor':
+        specifier: ^0.31.1
+        version: 0.31.1(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)
+      '@febro28/paylazor':
+        specifier: workspace:*
+        version: link:../../packages/paylazor
       '@lazorkit/wallet':
         specifier: 2.0.1
         version: 2.0.1(xdua7f72yw2zw3nbj7rgk4cwd4)
@@ -694,24 +758,6 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@febro28/paylazor@1.0.2':
-    resolution: {integrity: sha512-E0gFseBadb7p38+HxmtivODflpjz9CyMXv6eB9YmNAsNrhAb8Ku5XUWX6eOcDphAVJgU4gdSUOBkc0DmfX7dsw==}
-    peerDependencies:
-      '@coral-xyz/anchor': ^0.31.1
-      '@lazorkit/wallet': ^2.0.0
-      '@solana-program/token': ^0.9.0
-      '@solana/kit': ^5.0.0
-      '@solana/kora': ^0.1.0
-      '@solana/wallet-adapter-base': ^0.9.27
-      '@solana/wallet-standard-features': ^1.3.0
-      '@solana/web3.js': ^1.98.2
-      '@wallet-standard/base': ^1.1.0
-      '@wallet-standard/features': ^1.1.0
-      '@wallet-standard/wallet': ^1.1.0
-      react: ^18.3.1 || ^19.0.0
-      react-dom: ^18.3.1 || ^19.0.0
-      zustand: ^5.0.5
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2917,31 +2963,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
-
-  '@febro28/paylazor@1.0.2(jghq2qbzpb6ghr4geho7aelbh4)':
-    dependencies:
-      '@coral-xyz/anchor': 0.31.1(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@lazorkit/wallet': 2.0.1(xdua7f72yw2zw3nbj7rgk4cwd4)
-      '@solana-program/token': 0.9.0(@solana/kit@5.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))
-      '@solana/kit': 5.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@solana/kora': 0.1.1(@solana-program/token@0.9.0(@solana/kit@5.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10)))(@solana/kit@5.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))
-      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10))
-      '@solana/wallet-standard-features': 1.3.0
-      '@solana/web3.js': 1.98.4(bufferutil@4.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@wallet-standard/base': 1.1.0
-      '@wallet-standard/features': 1.1.0
-      '@wallet-standard/wallet': 1.1.0
-      buffer: 6.0.3
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
-      zustand: 5.0.9(@types/react@19.2.7)(react@19.2.3)
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - utf-8-validate
 
   '@humanfs/core@0.19.1': {}
 

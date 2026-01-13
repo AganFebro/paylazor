@@ -16,7 +16,7 @@
     "@lazorkit/wallet": "2.0.1",
     "@solana/web3.js": "^1.98.2",
     "buffer": "^6.0.3",
-    "@febro28/paylazor": "^1.0.2",
+    "@febro28/paylazor": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

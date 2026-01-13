@@ -5,7 +5,7 @@ import { createAssociatedTokenAccountIdempotentInstruction, getAssociatedTokenAd
 
 import { resolvePaylazorConfig } from './config';
 import { paylazorError, type PaylazorError } from './errors';
-import type { PaylazorCheckoutProps, PaylazorConfig, PaylazorAutoCreateAtas } from './types';
+import type { PaylazorCheckoutProps, PaylazorConfig, PaylazorAutoCreateAtas, PaylazorTheme } from './types';
 import { buildUsdcTransferInstructions } from './solana';
 import { formatFixedDecimal, parseFixedDecimalToBigInt } from './units';
 
@@ -37,9 +37,14 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
     memo,
     config: configOverrides,
     autoCreateAtas = 'both',
+    theme,
+    debug,
     onSuccess,
     onError,
   } = props;
+
+  const themeAttr: PaylazorTheme = theme ?? 'system';
+  const isDebug = debug === true;
 
   const configOrError = useMemo(() => resolvePaylazorConfig(configOverrides), [configOverrides]);
   const configError = useMemo<PaylazorError | null>(
@@ -108,7 +113,7 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
   if (!config) {
     const shownError = configError ?? paylazorError('CONFIG_INVALID', 'Missing required configuration.');
     return (
-      <div className="paylazor-root">
+      <div className="paylazor-root" data-theme={themeAttr}>
         <div className="paylazor-card">
           <p className="paylazor-title">Pay with Solana (USDC)</p>
           <p className="paylazor-sub">Missing required configuration.</p>
@@ -141,6 +146,8 @@ export default function PaylazorCheckoutImpl(props: PaylazorCheckoutProps) {
         recipient={recipient}
         memo={memo}
         config={config}
+        themeAttr={themeAttr}
+        debug={isDebug}
         autoCreateAtas={autoCreateAtas}
         step={step}
         setStep={setStep}
@@ -171,6 +178,8 @@ function PaylazorCheckoutInner(args: {
   recipient?: string;
   memo?: string;
   config: PaylazorConfig;
+  themeAttr: PaylazorTheme;
+  debug: boolean;
   autoCreateAtas: PaylazorAutoCreateAtas;
   step: Step;
   setStep: (s: Step) => void;
@@ -479,7 +488,7 @@ function PaylazorCheckoutInner(args: {
   const displayAmount = amountBaseUnits ? formatFixedDecimal(amountBaseUnits, args.config.usdcDecimals) : args.amount;
 
   return (
-    <div className="paylazor-root">
+    <div className="paylazor-root" data-theme={args.themeAttr}>
       <div className="paylazor-card">
         <p className="paylazor-title">Pay with Solana (USDC)</p>
         <p className="paylazor-sub">Passkey checkout powered by LazorKit. Default network: Devnet.</p>
@@ -488,17 +497,19 @@ function PaylazorCheckoutInner(args: {
           <span className="paylazor-label">Amount</span>
           <span className="paylazor-value">{displayAmount} USDC</span>
         </div>
-        <div className="paylazor-row">
-          <span className="paylazor-label">Recipient</span>
-          <span className="paylazor-value paylazor-mono">{recipientAddress}</span>
-        </div>
+        {args.debug ? (
+          <div className="paylazor-row">
+            <span className="paylazor-label">Recipient</span>
+            <span className="paylazor-value paylazor-mono">{recipientAddress}</span>
+          </div>
+        ) : null}
         {walletAddress ? (
           <div className="paylazor-row">
             <span className="paylazor-label">Wallet</span>
             <span className="paylazor-value paylazor-mono">{walletAddress}</span>
           </div>
         ) : null}
-        {usdcAtaAddress ? (
+        {args.debug && usdcAtaAddress ? (
           <div className="paylazor-row">
             <span className="paylazor-label">USDC ATA</span>
             <span className="paylazor-value paylazor-mono">{usdcAtaAddress}</span>
@@ -512,10 +523,12 @@ function PaylazorCheckoutInner(args: {
         ) : null}
         {usdcAtaStatus === 'missing' && usdcAtaAddress ? (
           <div className="paylazor-error">
-            USDC token account not found. Create the USDC ATA for this wallet, then fund it with USDC:
-            <div className="paylazor-mono" style={{ marginTop: 6 }}>
-              {usdcAtaAddress}
-            </div>
+            USDC token account not found. Create the wallet’s USDC token account, then fund it with USDC.
+            {args.debug && usdcAtaAddress ? (
+              <div className="paylazor-mono" style={{ marginTop: 6 }}>
+                {usdcAtaAddress}
+              </div>
+            ) : null}
           </div>
         ) : null}
         {lastRecipientAtaMissing ? (

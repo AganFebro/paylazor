@@ -8,11 +8,12 @@ export function PaylazorCheckout(props: PaylazorCheckoutProps) {
   ensureBrowserPolyfills();
   injectPaylazorStyles();
 
+  const themeAttr = props.theme ?? 'system';
   const Impl = useMemo(() => lazy(() => import('./PaylazorCheckoutImpl')), []);
   return (
     <Suspense
       fallback={
-        <div className="paylazor-root">
+        <div className="paylazor-root" data-theme={themeAttr}>
           <div className="paylazor-card">
             <p className="paylazor-title">Pay with Solana (USDC)</p>
             <p className="paylazor-sub">Loading…</p>
