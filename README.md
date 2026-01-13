@@ -27,6 +27,20 @@ Paylazor is an embeddable **“Pay with Solana (USDC)” checkout widget for Rea
 
 [`Paylazor installation using pnpm`](README_PAYLAZOR_INSTALL.md)
 
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=qWQ5yAysA0I">
+    <img
+      alt="Paylazor tutorial on YouTube"
+      src="./img/paylazor-thumb.jpg"
+      width="500"
+    />
+  </a>
+  <br />
+  <a href="https://www.youtube.com/watch?v=qWQ5yAysA0I">
+    <img alt="Watch on YouTube" src="https://img.shields.io/badge/Watch%20Tutorial-YouTube-ff0000?logo=youtube&logoColor=white" height="32" />
+  </a>
+</div>
+
 ## What is Paylazor?
 
 Paylazor is an npm-published React checkout widget (`@febro28/paylazor`) that provides:
